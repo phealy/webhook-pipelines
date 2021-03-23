@@ -30,7 +30,7 @@ steps:
 
     # Validate that we actually want to perform a checkout
     case '${{ parameters.githubpr.action }}' in
-      opened|reopened|edited) echo "Processing webhook...";;
+      opened|reopened|edited|synchronize) echo "Processing webhook...";;
       *) 
         echo "Not doing anything for action of type '${{ parameters.githubpr.action }}'."
         exit 0;;
