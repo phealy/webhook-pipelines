@@ -1,0 +1,46 @@
+trigger:
+- none
+
+variables:
+- name: webhook
+  value: github__pahealy7__apim-configuation__pr
+- name: check_context
+  value: demo_pipeline
+- name: check_description
+  value: AzDO pipeline check - state.txt
+
+container:
+resources:
+  webhooks:
+    - webhook: github_pr
+      connection: ${{ variables.webhook }}
+      filters:
+        - path: action
+          value: opened|edited
+  repositories:
+    - repository: code
+      type: github
+      endpoint: phealy
+      name: ${{ parameters.github_pr.repo.full_name }}
+      ref: refs/pull/${{ parameters.github_pr.number }}/head
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- checkout: code
+  persistCredentials: true
+- script: |
+    set -x
+    WEBHOOK_ACTION="${{ parameters.github_pr.action }}"
+    GIT_REMOTE=$(git config --get remote.origin.url)
+    GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
+    STATE=$(cat state.txt)
+    curl \
+      -H "Accept: application/vnd.github.v3+json" \
+      -H "${GIT_AUTH}" \
+      -X POST \
+      -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
+      https://api.github.com/repos/phealy/apim-configuration/statuses/$(Build.SourceVersion)
+    curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" https://api.github.com/repos/phealy/apim-configuration/commits/$(Build.SourceVersion)/status
+  displayName: 'Post commit status'
