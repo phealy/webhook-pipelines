@@ -55,7 +55,8 @@ steps:
     ACCEPT="Accept: application/vnd.github.v3+json"
     CONTENT_TYPE="Content-Type: application/json"
     STATUS_URL='${{ parameters.githubpr.pull_request.statuses_url }}'
-    STATUS_BODY="{\"state\":\"${STATE}\",\"context\":\"github__pahealy7__apim-configuation__pr\",\"description\":\"AzDO pipeline status check\",\"target_url\":\"${PIPELINE_URL}\"}"
+    #STATUS_BODY="{\"state\":\"${STATE}\",\"context\":\"github__pahealy7__apim-configuation__pr\",\"description\":\"AzDO pipeline status check\",\"target_url\":\"${PIPELINE_URL}\"}"
+    STATUS_BODY="{\"state\":\"${STATE}\"}"
     
     echo "Status body: ${STATUS_BODY}"
 
