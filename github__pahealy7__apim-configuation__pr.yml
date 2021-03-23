@@ -24,7 +24,7 @@ jobs:
 - job: validatePullRequestType
   displayName: Validate PR type
   pool: server
-  condition: in(${{ parameters.githubpr.action }}, 'opened', 'reopened', 'edited', 'synchronize')
+  condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
   steps: []
 
 - job: performCheckout
