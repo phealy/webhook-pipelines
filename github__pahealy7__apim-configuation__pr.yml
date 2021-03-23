@@ -62,5 +62,5 @@ steps:
     echo "Status body:"
     cat status_body.json
 
-    curl -vvv -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} -d @status_body.json
+    curl -vvv -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} --data '{"state":"success"}' #-d @status_body.json
   displayName: Post commit status
