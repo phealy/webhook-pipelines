@@ -2,11 +2,9 @@ trigger:
 - none
 
 variables:
-- name: webhook
-  value: github__pahealy7__apim-configuation__pr
-- name: check_context
-  value: demo_pipeline
-- name: check_description
+- name: checkContext
+  value: Pipeline validation
+- name: checkDescription
   value: AzDO pipeline check - state.txt
 
 resources:
@@ -22,48 +20,51 @@ resources:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- checkout: githubrepo
-  persistCredentials: true
-- script: |
-    set -euxo pipefail
+jobs:
+- job: validatePullRequestType
+  displayName: Validate PR type
+  pool: server
+  condition: in(${{ parameters.githubpr.action }}, 'opened', 'reopened', 'edited', 'synchronize')
+  steps: []
 
-    # Validate that we actually want to perform a checkout
-    case '${{ parameters.githubpr.action }}' in
-      opened|reopened|edited|synchronize) echo "Processing webhook...";;
-      *) 
-        echo "Not doing anything for action of type '${{ parameters.githubpr.action }}'."
-        exit 0;;
-    esac
+- job: performCheckout
+  displayName: Perform checkout
+  dependsOn: validatePullRequestType
+  steps:
+  - checkout: githubrepo
+    persistCredentials: true
 
-    # We can pull our Azure Pipelines PAT from the git config because we have
-    # persistCredentials: true above
-    GIT_REMOTE=$(git config --get remote.origin.url)
-    GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
-    WEBHOOK_ACTION='${{ parameters.githubpr.action }}'
+  - script: |
+      set -euxo pipefail
+      git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
+      git checkout pr
+      git status
+    displayName: Switch branch to pull request head
 
-    # Switch to the hidden reference that is currently the head of the PR
-    git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
-    git checkout pr
-    git status
+  - script: |
+      set -euxo pipefail
+      echo '##vso[task.setvariable variable=pipelineResult]$(cat state.txt)'
+    displayName: Perform checkout
 
-    # Just read the state from the file for testing
-    STATE=$(cat state.txt)
-    
-    # Get my run URL
-    PIPELINE_URL='$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)'
-    
-    # Post the state back to GitHub using our PAT
-    ACCEPT="Accept: application/vnd.github.v3+json"
-    CONTENT_TYPE="Content-Type: application/json"
-    STATUS_URL='${{ parameters.githubpr.pull_request.statuses_url }}'
-    
-    curl -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} --data @- << EOF
-    {
-      "state":"${STATE}",
-      "context":"Pipeline validation",
-      "description":"AzDO pipeline status check",
-      "target_url":"${PIPELINE_URL}"
-    }
-    EOF
-  displayName: Post commit status
+  - script: |
+      set -euxo pipefail
+      # Post the state back to GitHub using our PAT
+      # We can pull our Azure Pipelines PAT from the git config because we have
+      # persistCredentials: true above
+      GIT_REMOTE=$(git config --get remote.origin.url)
+      GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
+      
+      curl -H "Accept: application/vnd.github.v3+json" \
+        -H "Content-Type: application/json" \
+        -H "${GIT_AUTH}" \
+        -X POST \
+        '${{ parameters.githubpr.pull_request.statuses_url }}' \
+        --data @- << EOF
+      {
+        "state":"$(pipelineResult)",
+        "context":"$(checkContext),
+        "description":"$(checkDescription)",
+        "target_url":"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+      }
+      EOF
+    displayName: Post commit status ($(pipelineResult))
