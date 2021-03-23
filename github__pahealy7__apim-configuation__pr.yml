@@ -28,18 +28,13 @@ steps:
 - script: |
     set -euxo pipefail
 
+    # Validate that we actually want to perform a checkout
     case '${{ parameters.githubpr.action }}' in
       opened|reopened|edited) echo "Processing webhook...";;
       *) 
         echo "Not doing anything for action of type '${{ parameters.githubpr.action }}'."
         exit 0;;
     esac
-
-    # We need to run this manually to establish the webhook, so just exit if we don't have a PR number.
-    if [[ -z '${{ parameters.githubpr.number }}' ]]; then
-      echo 'Not actually triggered from a PR, exiting.'
-      exit 0
-    fi
 
     # We can pull our Azure Pipelines PAT from the git config because we have
     # persistCredentials: true above
