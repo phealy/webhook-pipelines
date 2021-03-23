@@ -15,7 +15,7 @@ resources:
       connection: github__pahealy7__apim-configuation__pr
       filters:
         - path: action
-          value: reopened
+          value: opened|reopened|closed
   repositories:
     - repository: githubrepo
       type: github
