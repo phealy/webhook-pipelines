@@ -55,12 +55,9 @@ steps:
     ACCEPT="Accept: application/vnd.github.v3+json"
     CONTENT_TYPE="Content-Type: application/json"
     STATUS_URL='${{ parameters.githubpr.pull_request.statuses_url }}'
-    cat >status_body.json <<EOF
-    { "state": "${STATE}", "context": "demo_pipeline", "description": "AzDO pipeline status check", "target_url": "${PIPELINE_URL}" }
-    EOF
+    STATUS_BODY="{\"state\":\"${STATE}\",\"context\":\"github__pahealy7__apim-configuation__pr\",\"description\":\"AzDO pipeline status check\",\"target_url\":\"${PIPELINE_URL}\"}"
+    
+    echo "Status body: ${STATUS_BODY}"
 
-    echo "Status body:"
-    cat status_body.json
-
-    curl -vvv -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} --data '{"state":"success"}' #-d @status_body.json
+    curl -vvv -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} --data "${STATUS_BODY}"
   displayName: Post commit status
