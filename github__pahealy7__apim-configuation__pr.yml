@@ -25,6 +25,8 @@ pool:
 steps:
 - checkout: githubrepo
   persistCredentials: true
+- script: echo "${{ parameters.githubpr }}"
+  displayName: Webhook contents
 - script: |
     set -euxo pipefail
 
@@ -34,13 +36,8 @@ steps:
     fi
 
     WEBHOOK_ACTION="${{ parameters.githubpr.action }}"
-    GIT_REMOTE=$(git config --get remote.origin.url)
-    GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
 
-    # Clone the PR repo
-    git -c http.extraheader="${GIT_AUTH}" clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} 
-    pushd ${{ parameters.githubpr.pull_request.head.repo.name }}
-    git -c http.extraheader="${GIT_AUTH}" fetch origin ref/pull/${{ parameters.githubpr.number }}/head:pr
+    git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
     git checkout pr
     git status
 
@@ -53,4 +50,4 @@ steps:
       -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
       ${{ parameters.githubpr.pull_request.head.repo.url }}/statuses/$(Build.SourceVersion)
     curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" ${{ parameters.githubpr.pull_request.head.repo.url }}/commits/$(Build.SourceVersion)/status
-  displayName: 'Post commit status'
+  displayName: Post commit status
