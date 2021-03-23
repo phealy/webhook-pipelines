@@ -28,24 +28,29 @@ steps:
 - script: |
     set -euxo pipefail
 
+    # We need to run this manually to establish the webhook, so just exit if we don't have a PR number.
     if [[ -z "${{ parameters.githubpr.number }}" ]]; then
       echo "Not actually triggered from a PR, exiting."
       exit 0
     fi
 
+    # We can pull our Azure Pipelines PAT from the git config because we have
+    # persistCredentials: true above
+    GIT_REMOTE=$(git config --get remote.origin.url)
+    GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
     WEBHOOK_ACTION="${{ parameters.githubpr.action }}"
 
+    # Switch to the hidden reference that is currently the head of the PR
     git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
     git checkout pr
     git status
 
+    # Just read the state from the file for testing
     STATE=$(cat state.txt)
     
+    # Post the state back to GitHub using our PAT
     curl \
-      -H "Accept: application/vnd.github.v3+json" \
-      -H "${GIT_AUTH}" \
-      -X POST \
+      -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" -X POST \
       -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
-      ${{ parameters.githubpr.pull_request.head.repo.url }}/statuses/$(Build.SourceVersion)
-    curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" ${{ parameters.githubpr.pull_request.head.repo.url }}/commits/$(Build.SourceVersion)/status
+      ${{ parameters.githubpr.pull_request.statuses_url }}
   displayName: Post commit status
