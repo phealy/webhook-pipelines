@@ -38,7 +38,7 @@ jobs:
     displayName: Switch branch to pull request head
     
   - script: |
-      exit 0
+      exit 1
     displayName: Perform checkout
 
   - script: |
