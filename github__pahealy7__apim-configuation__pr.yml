@@ -12,29 +12,32 @@ variables:
 resources:
   webhooks:
     - webhook: github_pr
-      connection: ${{ variables.webhook }}
+      connection: github__pahealy7__apim-configuation__pr
       filters:
         - path: action
           value: opened|edited
-  repositories:
-    - repository: code
-      type: github
-      endpoint: phealy
-      name: ${{ parameters.github_pr.repo.full_name }}
-      ref: refs/pull/${{ parameters.github_pr.number }}/head
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- checkout: code
+- checkout: self
   persistCredentials: true
 - script: |
     set -x
     WEBHOOK_ACTION="${{ parameters.github_pr.action }}"
     GIT_REMOTE=$(git config --get remote.origin.url)
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
+
+    # Set auth for the PR repo
+    git config --set "http.${{ parameters.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
+
+    git clone ${{ parameters.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.number }}/head
+  workingDirectory: $(Build.SourcesDirectory)
+  displayName: Clone PR code
+- script: |
     STATE=$(cat state.txt)
+    
     curl \
       -H "Accept: application/vnd.github.v3+json" \
       -H "${GIT_AUTH}" \
@@ -42,4 +45,5 @@ steps:
       -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
       https://api.github.com/repos/phealy/apim-configuration/statuses/$(Build.SourceVersion)
     curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" https://api.github.com/repos/phealy/apim-configuration/commits/$(Build.SourceVersion)/status
+  workingDirectory: $(Build.SourcesDirectory)/${{ parameters.pull_request.head.repo.name }}
   displayName: 'Post commit status'
