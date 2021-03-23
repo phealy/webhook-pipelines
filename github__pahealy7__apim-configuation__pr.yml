@@ -56,12 +56,7 @@ steps:
     CONTENT_TYPE="Content-Type: application/json"
     STATUS_URL='${{ parameters.githubpr.pull_request.statuses_url }}'
     cat >status_body.json <<EOF
-    {
-      "state": "${STATE}",
-      "context": "demo_pipeline",
-      "description": "AzDO pipeline status check",
-      "target_url": "${PIPELINE_URL}"
-    }
+    { "state": "${STATE}", "context": "demo_pipeline", "description": "AzDO pipeline status check", "target_url": "${PIPELINE_URL}" }
     EOF
 
     echo "Status body:"
