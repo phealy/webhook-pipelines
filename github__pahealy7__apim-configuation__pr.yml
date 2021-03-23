@@ -21,15 +21,18 @@ pool:
   vmImage: ubuntu-latest
 
 jobs:
-- job: validatePullRequestType
-  displayName: Validate PR type
-  pool: server
-  condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
-  steps: []
+  # This job is serverless, and thus doesn't require an agent to be assigned in order to run.
+  # It exists purely to have the condition evaluated
+# - job: validatePullRequestType
+#   displayName: Validate PR type
+#   pool: server
+  
+#   steps: []
 
 - job: performCheckout
   displayName: Perform checkout
   dependsOn: validatePullRequestType
+  condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
   steps:
   - checkout: githubrepo
     persistCredentials: true
