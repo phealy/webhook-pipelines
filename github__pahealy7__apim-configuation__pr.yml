@@ -25,6 +25,12 @@ steps:
   persistCredentials: true
 - script: |
     set -x
+
+    if [[ -z "${{ parameters.githubpr.number }}" ]]; then
+      echo "Not actually triggered from a PR, exiting."
+      exit 0
+    fi
+
     WEBHOOK_ACTION="${{ parameters.githubpr.action }}"
     GIT_REMOTE=$(git config --get remote.origin.url)
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
@@ -32,10 +38,11 @@ steps:
     # Set auth for the PR repo
     git config --set "http.${{ parameters.githubpr.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
 
+    # Clone the PR repo
     git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.githubpr.number }}/head
-  workingDirectory: $(Build.SourcesDirectory)
-  displayName: Clone PR code
-- script: |
+
+    pushd ${{ parameters.githubpr.pull_request.head.repo.name }}
+
     STATE=$(cat state.txt)
     
     curl \
@@ -45,5 +52,4 @@ steps:
       -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
       ${{ parameters.githubpr.pull_request.head.repo.url }}/statuses/$(Build.SourceVersion)
     curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" ${{ parameters.githubpr.pull_request.head.repo.url }}/commits/$(Build.SourceVersion)/status
-  workingDirectory: $(Build.SourcesDirectory)/${{ parameters.githubpr.pull_request.head.repo.name }}
   displayName: 'Post commit status'
