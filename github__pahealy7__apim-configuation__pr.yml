@@ -31,7 +31,7 @@ jobs:
 
 - job: performCheckout
   displayName: Perform checkout
-  dependsOn: validatePullRequestType
+  #dependsOn: validatePullRequestType
   condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
   steps:
   - checkout: githubrepo
