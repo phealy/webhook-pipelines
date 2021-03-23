@@ -54,7 +54,7 @@ steps:
     # Post the state back to GitHub using our PAT
     ACCEPT="Accept: application/vnd.github.v3+json"
     STATUS_URL='${{ parameters.githubpr.pull_request.statuses_url }}'
-    read STATUS_BODY <<EOF
+    cat >status_body.json <<EOF
     {
       "state": "${STATE}",
       "context": "demo_pipeline",
@@ -63,5 +63,8 @@ steps:
     }
     EOF
 
-    curl -v -H "${ACCEPT}" -H "${GIT_AUTH}" -X POST ${STATUS_URL} -d "${STATUS_BODY}"
+    echo "Status body:"
+    cat status_body.json
+
+    curl -v -H "${ACCEPT}" -H "${GIT_AUTH}" -X POST ${STATUS_URL} -d @status_body.json
   displayName: Post commit status
