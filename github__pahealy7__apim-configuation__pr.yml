@@ -25,8 +25,6 @@ pool:
 steps:
 - checkout: githubrepo
   persistCredentials: true
-- script: echo "${{ parameters.githubpr }}"
-  displayName: Webhook contents
 - script: |
     set -euxo pipefail
 
