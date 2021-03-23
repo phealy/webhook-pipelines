@@ -16,6 +16,7 @@ resources:
   repositories:
     - repository: githubrepo
       type: github
+      endpoint: phealy
       name: phealy/apim-configuration
 
 pool:
