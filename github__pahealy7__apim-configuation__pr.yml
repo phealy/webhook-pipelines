@@ -62,7 +62,7 @@ steps:
     curl -H "${ACCEPT}" -H "${GIT_AUTH}" -H "${CONTENT_TYPE}" -X POST ${STATUS_URL} --data @- << EOF
     {
       "state":"${STATE}",
-      "context":"github__pahealy7__apim-configuation__pr",
+      "context":"Pipeline validation",
       "description":"AzDO pipeline status check",
       "target_url":"${PIPELINE_URL}"
     }
