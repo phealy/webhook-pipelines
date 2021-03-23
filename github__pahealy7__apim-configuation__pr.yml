@@ -9,7 +9,6 @@ variables:
 - name: check_description
   value: AzDO pipeline check - state.txt
 
-container:
 resources:
   webhooks:
     - webhook: github_pr
