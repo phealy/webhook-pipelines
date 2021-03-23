@@ -41,10 +41,6 @@ jobs:
       exit 0
     displayName: Perform checkout
 
-- job: postSuccess
-  displayName: Post success condition if checkout job passed
-  dependsOn: performCheckout
-  steps:
   - script: |
       GIT_REMOTE=$(git config --get remote.origin.url)
       GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
@@ -67,12 +63,8 @@ jobs:
         -X POST \
         '${{ parameters.githubpr.pull_request.statuses_url }}' \
         --data @statusPost.json
-    displayName: Post commit status
-- job: postFailure
-  displayName: Post failure condition if checkout job failed
-  dependsOn: performCheckout
-  condition: failed()
-  steps:
+    displayName: Post commit success
+
   - script: |
       GIT_REMOTE=$(git config --get remote.origin.url)
       GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
@@ -92,4 +84,5 @@ jobs:
         -X POST \
         '${{ parameters.githubpr.pull_request.statuses_url }}' \
         --data @statusPost.json
-    displayName: Post commit status
+    condition: failed()
+    displayName: Post commit failure
