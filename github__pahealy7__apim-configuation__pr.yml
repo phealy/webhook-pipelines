@@ -11,7 +11,7 @@ variables:
 
 resources:
   webhooks:
-    - webhook: github_pr
+    - webhook: githubpr
       connection: github__pahealy7__apim-configuation__pr
       filters:
         - path: action
@@ -25,7 +25,7 @@ steps:
   persistCredentials: true
 - script: |
     set -x
-    WEBHOOK_ACTION="${{ parameters.github_pr.action }}"
+    WEBHOOK_ACTION="${{ parameters.githubpr.action }}"
     GIT_REMOTE=$(git config --get remote.origin.url)
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
 
