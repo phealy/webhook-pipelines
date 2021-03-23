@@ -15,7 +15,17 @@ resources:
       connection: github__pahealy7__apim-configuation__pr
       filters:
         - path: action
-          value: opened|reopened|edited
+          value: opened
+    - webhook: githubpr
+      connection: github__pahealy7__apim-configuation__pr
+      filters:
+        - path: action
+          value: reopened
+    - webhook: githubpr
+      connection: github__pahealy7__apim-configuation__pr
+      filters:
+        - path: action
+          value: edited
   repositories:
     - repository: githubrepo
       type: github
