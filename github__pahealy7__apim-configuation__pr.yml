@@ -21,7 +21,7 @@ steps:
 - checkout: self
   persistCredentials: true
 - script: |
-    set -x
+    set -euxo pipefail
 
     if [[ -z "${{ parameters.githubpr.number }}" ]]; then
       echo "Not actually triggered from a PR, exiting."
@@ -33,7 +33,7 @@ steps:
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
 
     # Set auth for the PR repo
-    git config --set "http.${{ parameters.githubpr.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
+    git config --add "http.${{ parameters.githubpr.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
 
     # Clone the PR repo
     git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.githubpr.number }}/head
