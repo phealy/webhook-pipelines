@@ -30,9 +30,9 @@ steps:
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
 
     # Set auth for the PR repo
-    git config --set "http.${{ parameters.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
+    git config --set "http.${{ parameters.githubpr.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
 
-    git clone ${{ parameters.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.number }}/head
+    git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.number }}/head
   workingDirectory: $(Build.SourcesDirectory)
   displayName: Clone PR code
 - script: |
@@ -43,7 +43,7 @@ steps:
       -H "${GIT_AUTH}" \
       -X POST \
       -d "{\"context\": \"demo_pipeline\", \"description\": \"AzDO pipeline status check\", \"state\":\"$STATE\"}" \
-      https://api.github.com/repos/phealy/apim-configuration/statuses/$(Build.SourceVersion)
-    curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" https://api.github.com/repos/phealy/apim-configuration/commits/$(Build.SourceVersion)/status
-  workingDirectory: $(Build.SourcesDirectory)/${{ parameters.pull_request.head.repo.name }}
+      ${{ parameters.githubpr.pull_request.head.repo.url }}/statuses/$(Build.SourceVersion)
+    curl -H "Accept: application/vnd.github.v3+json" -H "${GIT_AUTH}" ${{ parameters.githubpr.pull_request.head.repo.url }}/commits/$(Build.SourceVersion)/status
+  workingDirectory: $(Build.SourcesDirectory)/${{ parameters.githubpr.pull_request.head.repo.name }}
   displayName: 'Post commit status'
