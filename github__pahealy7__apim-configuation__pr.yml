@@ -33,12 +33,14 @@ steps:
     GIT_AUTH=$(git config --get "http.${GIT_REMOTE}.extraheader")
 
     # Set auth for the PR repo
-    git config --add "http.${{ parameters.githubpr.pull_request.head.repo.url }}.extraheader" "$GIT_AUTH"
+    git config --add "http.${{ parameters.githubpr.pull_request.head.repo.html_url }}.extraheader" "$GIT_AUTH"
 
     # Clone the PR repo
-    git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.githubpr.number }}/head
-
+    git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} 
     pushd ${{ parameters.githubpr.pull_request.head.repo.name }}
+    git fetch origin ref/pull/${{ parameters.githubpr.number }}/head:pr
+    git checkout pr
+    git status
 
     STATE=$(cat state.txt)
     
