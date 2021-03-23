@@ -32,7 +32,7 @@ steps:
     # Set auth for the PR repo
     git config --set "http.${{ parameters.githubpr.pull_request.head.repo.clone_url }}.extraheader=$GIT_AUTH"
 
-    git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.number }}/head
+    git clone ${{ parameters.githubpr.pull_request.head.repo.clone_url }} ref/pull/${{ parameters.githubpr.number }}/head
   workingDirectory: $(Build.SourcesDirectory)
   displayName: Clone PR code
 - script: |
