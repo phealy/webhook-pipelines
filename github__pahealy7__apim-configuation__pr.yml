@@ -46,7 +46,7 @@ jobs:
 
   - script: |
       set -euxo pipefail
-      echo '##vso[task.setvariable variable=pipelineResult]$(cat state.txt)'
+      echo "##vso[task.setvariable variable=pipelineResult]$(cat state.txt)"
     displayName: Perform checkout
 
   - script: |
