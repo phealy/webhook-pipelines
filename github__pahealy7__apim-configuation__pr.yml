@@ -13,9 +13,6 @@ resources:
   webhooks:
     - webhook: githubpr
       connection: github__pahealy7__apim-configuation__pr
-      filters:
-        - path: action
-          value: opened
 
 pool:
   vmImage: ubuntu-latest
