@@ -47,10 +47,10 @@ jobs:
       
       cat > statusPost.json << EOF
       {
-        "state":"$(pipelineResult)",
-        "context":"$(checkContext),
-        "description":"$(checkDescription)",
-        "target_url":"$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+        "state": "$(pipelineResult)",
+        "context": "$(checkContext)",
+        "description": "$(checkDescription)",
+        "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
       }
       EOF
 
