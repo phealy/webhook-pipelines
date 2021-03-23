@@ -13,9 +13,6 @@ resources:
   webhooks:
     - webhook: githubpr
       connection: github__pahealy7__apim-configuation__pr
-      filters:
-        - path: action
-          value: opened||reopened
   repositories:
     - repository: githubrepo
       type: github
@@ -30,6 +27,13 @@ steps:
   persistCredentials: true
 - script: |
     set -euxo pipefail
+
+    case '${{ parameters.githubpr.action }}' in
+      opened|reopened|edited) echo "Processing webhook...";;
+      *) 
+        echo "Not doing anything for action of type '${{ parameters.githubpr.action }}'."
+        exit 0;;
+    esac
 
     # We need to run this manually to establish the webhook, so just exit if we don't have a PR number.
     if [[ -z '${{ parameters.githubpr.number }}' ]]; then
