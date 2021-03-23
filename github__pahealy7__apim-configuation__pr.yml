@@ -13,12 +13,16 @@ resources:
   webhooks:
     - webhook: githubpr
       connection: github__pahealy7__apim-configuation__pr
+  repositories:
+    - repository: githubrepo
+      type: github
+      name: phealy/apim-configuration
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
-- checkout: self
+- checkout: githubrepo
   persistCredentials: true
 - script: |
     set -euxo pipefail
