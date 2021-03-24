@@ -10,7 +10,7 @@ variables:
 resources:
   webhooks:
     - webhook: githubpr
-      connection: github__pahealy7__apim-configuation__pr
+      connection: github__pahealy7__apim-configuration__pr
   repositories:
     - repository: githubrepo
       type: github
