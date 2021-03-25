@@ -78,12 +78,12 @@ jobs:
       # to terminate and post a failure to the commit.
       - script: |
           # IMPLEMENT YOUR CHECKOUT TASK(S) HERE
-          exit 1
+          exit 0
         displayName: Perform checkout step 1
 
       - script: |
           # ANOTHER CHECKOUT TASK
-          exit 0
+          exit 1
         displayName: Perform checkout step 2
 
       # This sets the overall status to success if we get here.
