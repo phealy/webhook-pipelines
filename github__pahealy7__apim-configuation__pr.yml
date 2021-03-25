@@ -32,6 +32,8 @@ variables:
     value: Pipeline validation
   - name: checkDescription
     value: AzDO pipeline check - state.txt
+  - name: System.debug
+    value: true
 
 resources:
   # Incoming Webhook service connection
