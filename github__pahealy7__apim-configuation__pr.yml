@@ -132,7 +132,7 @@ jobs:
           test -f fail1 && {
             echo '##vso[task.issue type=error;]Failed in checkout step 1.'
             echo '##vso[task.complete result=Failed;done=true;]'
-          }
+          } || { true; }
         displayName: Perform checkout step 1
 
       - script: |
@@ -143,7 +143,7 @@ jobs:
           test -f fail2 && {
             echo '##vso[task.issue type=error;]Failed in checkout step 2.'
             echo '##vso[task.complete result=Failed;done=true;]'
-          }
+          } || { true; }
         displayName: Perform checkout step 2
 
       # This sets the overall status variable to success if we get here.
