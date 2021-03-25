@@ -114,7 +114,7 @@ jobs:
         displayName: Switch branch to pull request head
 
       # Execute all provided checkoutSteps from the inheriting pipeline.
-      - ${{ each step in parameters.buildSteps }}:
+      - ${{ each step in parameters.checkoutSteps }}:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
