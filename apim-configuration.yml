@@ -80,7 +80,8 @@ jobs:
 
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
-          echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
+          GIT_AUTH="$(git config --get "http.${GIT_REMOTE}.extraheader")"
+          echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]${GIT_AUTH##Authorization: }"
         displayName: Set pipeline variables
 
       # Post the initial pending status to GitHub
@@ -99,8 +100,9 @@ jobs:
           echo "##[endgroup]"
 
           echo "##[group]curl output"
-          # -H "${GIT_AUTH}" \
-          curl -H "Accept: application/vnd.github.v3+json" \
+          curl --no-progress-meter \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: ${GIT_AUTH}" \
             -H "Content-Type: application/json" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
@@ -130,6 +132,7 @@ jobs:
       # jobs each one will need this step.
       - checkout: githubrepo
         displayName: Check out base repository
+        persistCredentials: true
       - script: |
           set -euo pipefail
           echo "##[command]Fetch pull request head as branch 'pr'"
@@ -185,6 +188,7 @@ jobs:
       - script: |
           set -euo pipefail
 
+          echo "##[command]Found checkout status: $(dependencies.performCheckout.result)"
           select "$(dependencies.performCheckout.result)" in
             Succeeded) STATUS="success";;
             Failed|Cancelled) STATUS="failure";;
@@ -204,9 +208,10 @@ jobs:
           echo "##[endgroup]"
 
           echo "##[group]curl output"
-          curl -H "Accept: application/vnd.github.v3+json" \
+          curl --no-progress-meter \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: ${GIT_AUTH}" \
             -H "Content-Type: application/json" \
-            -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
             --data @"$(Build.StagingDirectory)/statusPost.json" \
