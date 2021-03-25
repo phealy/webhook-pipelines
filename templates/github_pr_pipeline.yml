@@ -46,7 +46,7 @@ parameters:
 jobs:
   - job: performCheckout
     displayName: Perform checkout
-    condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
+    #condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
     steps:
       - checkout: githubrepo
         displayName: Check out base repository
