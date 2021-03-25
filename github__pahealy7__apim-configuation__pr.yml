@@ -80,18 +80,20 @@ jobs:
       # Implement checkout tasks here - any failing step will cause the pipeline
       # to terminate and post a failure to the commit.
       - script: |
+          set -euxo pipefail
           # IMPLEMENT YOUR CHECKOUT TASK(S) HERE
           # This example will fail in step 1 if the file "fail1" exists
           test ! -f fail1
         displayName: Perform checkout step 1
 
       - script: |
+          set -euxo pipefail
           # ANOTHER CHECKOUT TASK
           # This example will fail in step 1 if the file "fail2" exists
           test -f fail2 && exit 1
         displayName: Perform checkout step 2
 
-      # This sets the overall status to success if we get here.
+      # This sets the overall status variable to success if we get here.
       - script: |
           echo '##vso[task.setvariable variable=pipelineStatus]success'
         displayName: Set pipeline status to success
@@ -131,6 +133,10 @@ jobs:
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
             --data @"${OUTPUT}/statusPost.json" \
             | tee "$OUTPUT/statusReply.json"
+
+          # Error out if the response from GitHub has .errors in it, indicating the
+          # API call didn't actually succeed.
+          ! jq -cre '.errors' <"$OUTPUT/statusReply.json" >/dev/null
         condition: always()
         displayName: Post commit status
 
