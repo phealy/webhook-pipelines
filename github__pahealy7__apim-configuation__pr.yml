@@ -103,10 +103,11 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          jq -cre '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json" >/dev/null && {
-            echo '##vso[task.issue type=error;]GitHub pending commit status post failed.'
+          JQ="$(jq -cr '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json" >/dev/null)"
+          if [[ "${JQ}" -ne "null" ]]; then
+            echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
             echo '##vso[task.complete result=Failed;done=true;]'
-          } || { true; }
+          fi
         condition: always()
         displayName: Post pending status to PR commit
 
@@ -183,10 +184,11 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          jq -cre '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json" >/dev/null && {
+          JQ="$(jq -cr '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json" >/dev/null)"
+          if [[ "${JQ}" -ne "null" ]]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
-          } || { true; }
+          fi
         env:
           GIT_AUTH: $(gitAuthToken)
         condition: always()
