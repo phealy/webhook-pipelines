@@ -106,7 +106,7 @@ jobs:
             --data @"$(Build.StagingDirectory)/pendingPost.json" \
             | tee "$(Build.StagingDirectory)/pendingReply.json"
           echo "##[endgroup]"
-          
+
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
           JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/pendingReply.json" >/dev/null)"
@@ -125,9 +125,10 @@ jobs:
       # jobs each one will need this step.
       - script: |
           set -euo pipefail
+          echo "##[command]Fetch pull request head as branch 'pr'"
           git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
+          echo "##[command]Check out 'pr' branch"
           git checkout pr
-          git status
         displayName: Switch branch to pull request head
 
       ### CHECKOUT STEPS START HERE
@@ -155,12 +156,14 @@ jobs:
       # This sets the overall status variable to success if we get here.
       - script: |
           set -euo pipefail
+          echo "##[command]Setting pipelineStatus to success"
           echo "##vso[task.setvariable variable=pipelineStatus]success"
         displayName: Set pipeline status to success
 
       # This triggers to set failure state if any previous step failed.
       - script: |
           set -euo pipefail
+          echo "##[command]Setting pipelineStatus to failure"
           echo "##vso[task.setvariable variable=pipelineStatus]failure"
         condition: failed()
         displayName: Set pipeline status to failure
@@ -169,7 +172,8 @@ jobs:
       # GitHub is waiting for us to post back.
       - script: |
           set -euo pipefail
-          echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
+          echo "##[command]Status post to ${{ parameters.githubpr.pull_request.statuses_url }}"
+          echo "##[group]Post body"
           cat << EOF | tee "$(Build.StagingDirectory)/statusPost.json"
           {
             "state": "$(pipelineStatus)",
@@ -178,7 +182,9 @@ jobs:
             "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
           }
           EOF
+          echo "##[endgroup]"
 
+          echo "##[group]curl output"
           curl -H "Accept: application/vnd.github.v3+json" \
             -H "Content-Type: application/json" \
             -H "${GIT_AUTH}" \
@@ -186,6 +192,7 @@ jobs:
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
             --data @"$(Build.StagingDirectory)/statusPost.json" \
             | tee "$(Build.StagingDirectory)/statusReply.json"
+          echo "##[endgroup]"
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
