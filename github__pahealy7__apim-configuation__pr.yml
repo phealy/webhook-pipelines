@@ -72,7 +72,7 @@ jobs:
 
       # Post the initial pending status to GitHub and initialize the tokens for later
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
 
           # Create a temporary directory to put our status files in
           STATUSPOSTOUTPUTDIRECTORY="$(mktemp -d)"
@@ -115,7 +115,7 @@ jobs:
       # NOTE: this only applies in *this job*, so if you split this into multiple
       # jobs each one will need this step.
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
           git fetch origin pull/${{ parameters.githubpr.number }}/head:pr
           git checkout pr
           git status
@@ -124,7 +124,7 @@ jobs:
       # Implement checkout tasks here - any failing step will cause the pipeline
       # to terminate and post a failure to the commit.
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
           # IMPLEMENT YOUR CHECKOUT TASK(S) HERE
           sleep 5
           # This example will fail in step 1 if the file "fail1" exists
@@ -135,7 +135,7 @@ jobs:
         displayName: Perform checkout step 1
 
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
           # ANOTHER CHECKOUT TASK
           sleep 5
           # This example will fail in step 1 if the file "fail2" exists
@@ -147,13 +147,13 @@ jobs:
 
       # This sets the overall status variable to success if we get here.
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
           echo '##vso[task.setvariable variable=pipelineStatus]success'
         displayName: Set pipeline status to success
 
       # This triggers to set failure state if any previous step failed.
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
           echo '##vso[task.setvariable variable=pipelineStatus]failure'
         condition: failed()
         displayName: Set pipeline status to failure
@@ -161,7 +161,7 @@ jobs:
       # We always want to run this step, because the fact we got invoked means that
       # GitHub is waiting for us to post back.
       - script: |
-          set -euxo pipefail
+          set -eux   # Enable bash verbose output
 
           echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
           cat << EOF | tee "${STATUSPOSTOUTPUTDIRECTORY}/statusPost.json"
