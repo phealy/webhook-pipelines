@@ -75,68 +75,45 @@ jobs:
 
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
-          GIT_AUTH="$(git config --get "http.${GIT_REMOTE}.extraheader")"
-          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]${GIT_AUTH##Authorization: }"
+          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
 
           echo "##vso[build.updatebuildnumber]${{ parameters.githubpr.pull_request.head.repo.name }}_pullrequest_${{ parameters.githubpr.number }}"
 
           echo "##vso[task.setendpoint id=000-0000-0000;field=url]${{ parameters.githubpr.pull_request.statuses_url }}"
         displayName: Set pipeline variables
 
-      - task: InvokeRESTAPI@1
-        inputs:
-          connectionType: 'connectedServiceName'
-          serviceConnection: 'api.github.com'
-          method: 'POST'
-          headers: |
-            {
-                "Content-Type":"application/vnd.github.v3+json", 
-                "Authorization":"$(gitAuthToken)"
-            }
-          body: |
-            {
-                "state": "pending",
-                "context": "$(checkContext)",
-                "description": "$(checkDescription)",
-                "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
-            }
-          waitForCompletion: 'false'
-          successCriteria: 'eq(root[errors], '''')'
+      # Post the initial pending status to GitHub
+      - script: |
+          set -euo pipefail
+          echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
+          cat << EOF | tee "$(Build.StagingDirectory)/pendingPost.json"
+          {
+            "state": "pending",
+            "context": "$(checkContext)",
+            "description": "$(checkDescription)",
+            "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+          }
+          EOF
+
+          curl -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            -H "${GIT_AUTH}" \
+            -X POST \
+            '${{ parameters.githubpr.pull_request.statuses_url }}' \
+            --data @"$(Build.StagingDirectory)/pendingPost.json" \
+            | tee "$(Build.StagingDirectory)/pendingReply.json"
+
+          # Error out if the response from GitHub has .errors in it, indicating the
+          # API call didn't actually succeed.
+          JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/pendingReply.json" >/dev/null)"
+          if [ "${JQ}" == 'null' ]; then
+            echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
+            echo '##vso[task.complete result=Failed;done=true;]'
+          fi
+        env:
+          GIT_AUTH: $(gitAuthToken)
         condition: always()
         displayName: Post pending status to PR commit
-
-      # # Post the initial pending status to GitHub
-      # - script: |
-      #     set -euo pipefail
-      #     echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
-      #     cat << EOF | tee "$(Build.StagingDirectory)/pendingPost.json"
-      #     {
-      #       "state": "pending",
-      #       "context": "$(checkContext)",
-      #       "description": "$(checkDescription)",
-      #       "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
-      #     }
-      #     EOF
-
-      #     curl -H "Accept: application/vnd.github.v3+json" \
-      #       -H "Content-Type: application/json" \
-      #       -H "${GIT_AUTH}" \
-      #       -X POST \
-      #       '${{ parameters.githubpr.pull_request.statuses_url }}' \
-      #       --data @"$(Build.StagingDirectory)/pendingPost.json" \
-      #       | tee "$(Build.StagingDirectory)/pendingReply.json"
-
-      #     # Error out if the response from GitHub has .errors in it, indicating the
-      #     # API call didn't actually succeed.
-      #     JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/pendingReply.json" >/dev/null)"
-      #     if [ "${JQ}" == 'null' ]; then
-      #       echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
-      #       echo '##vso[task.complete result=Failed;done=true;]'
-      #     fi
-      #   env:
-      #     GIT_AUTH: $(gitAuthToken)
-      #   condition: always()
-      #   displayName: Post pending status to PR commit
 
       # This script step switches the repository that's been checked out above
       # to the head of the pull request so that we have the code we need to check.
