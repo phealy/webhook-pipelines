@@ -37,8 +37,8 @@ extends:
   template: github_pr_pipeline.yml
   parameters:
     # Pass in required data
-    checkContext: $(checkContext)
-    checkDescription: $(checkDescription)
+    # checkContext: $(checkContext)
+    # checkDescription: $(checkDescription)
     githubpr: ${{ parameters.githubpr }}
 
     # Implement checkout tasks here - any failing step will cause the pipeline
