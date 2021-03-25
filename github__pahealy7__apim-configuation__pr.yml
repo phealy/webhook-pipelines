@@ -98,7 +98,7 @@ jobs:
             -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
-            --data @"${OUTPUT}/statusPost.json" \
+            --data @"${statusPostOutputDirectory}/statusPost.json" \
             | tee "${statusPostOutputDirectory}/pendingReply.json"
 
           # Error out if the response from GitHub has .errors in it, indicating the
@@ -176,7 +176,7 @@ jobs:
             -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
-            --data @"${OUTPUT}/statusPost.json" \
+            --data @"${statusPostOutputDirectory}/statusPost.json" \
             | tee "${statusPostOutputDirectory}/statusReply.json"
 
           # Error out if the response from GitHub has .errors in it, indicating the
