@@ -129,6 +129,8 @@ jobs:
 
       # Publish what we posted to and received from GitHub into a pipeline artifact
       - task: PublishPipelineArtifact@1
+        displayName: Publish status post pipeline artifact
+        condition: always()
         inputs:
           targetPath: '$(statusPostOutput)'
           artifact: 'statusPostOutput'
