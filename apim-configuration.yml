@@ -20,7 +20,7 @@ resources:
   # Incoming Webhook service connection
   webhooks:
     - webhook: githubpr
-      connection: github__pahealy7__apim-configuration__pr
+      connection: apim-configuration
   # We need a repository resource to the repo we're running the pipeline
   # against, both so that we can get the code and so we can get an access
   # token to post the status back.
@@ -34,15 +34,9 @@ pool:
   vmImage: ubuntu-latest
 
 extends:
-  template: github_pr_pipeline.yml
+  template: templates/github_pr_pipeline.yml
   parameters:
-    # Pass in required data
-    # checkContext: $(checkContext)
-    # checkDescription: $(checkDescription)
     githubpr: ${{ parameters.githubpr }}
-
-    # Implement checkout tasks here - any failing step will cause the pipeline
-    # to terminate and post a failure to the commit.
     checkoutSteps:
       - script: |
           # IMPLEMENT YOUR CHECKOUT TASK(S) HERE
