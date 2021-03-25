@@ -63,12 +63,13 @@ jobs:
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
           echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
+        displayName: Set pipeline variables
 
-      # Post the initial pending status to GitHub and initialize the tokens for later
+      # Post the initial pending status to GitHub
       - script: |
           set -euo pipefail
           echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
-          cat << EOF | tee "${STATUSPOSTOUTPUTDIRECTORY}/pendingPost.json"
+          cat << EOF | tee "$(Build.StagingDirectory)/pendingPost.json"
           {
             "state": "pending",
             "context": "$(checkContext)",
@@ -82,16 +83,18 @@ jobs:
             -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
-            --data @"${STATUSPOSTOUTPUTDIRECTORY}/pendingPost.json" \
-            | tee "${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json"
+            --data @"$(Build.StagingDirectory)/pendingPost.json" \
+            | tee "$(Build.StagingDirectory)/pendingReply.json"
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json" >/dev/null)"
+          JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/pendingReply.json" >/dev/null)"
           if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
+        env:
+          GIT_AUTH: $(gitAuthToken)
         condition: always()
         displayName: Post pending status to PR commit
 
@@ -129,7 +132,7 @@ jobs:
       - script: |
           set -euo pipefail
           echo "Status post to ${{ parameters.githubpr.pull_request.statuses_url }}:"
-          cat << EOF | tee "${STATUSPOSTOUTPUTDIRECTORY}/statusPost.json"
+          cat << EOF | tee "$(Build.StagingDirectory)/statusPost.json"
           {
             "state": "$(pipelineStatus)",
             "context": "$(checkContext)",
@@ -143,12 +146,12 @@ jobs:
             -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
-            --data @"${STATUSPOSTOUTPUTDIRECTORY}/statusPost.json" \
-            | tee "${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json"
+            --data @"$(Build.StagingDirectory)/statusPost.json" \
+            | tee "$(Build.StagingDirectory)/statusReply.json"
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr '.errors' <\"${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json\" >/dev/null)"
+          JQ="$(jq -cr '.errors' <\"$(Build.StagingDirectory)/statusReply.json\" >/dev/null)"
           if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
@@ -163,6 +166,5 @@ jobs:
         displayName: Publish status post pipeline artifact
         condition: always()
         inputs:
-          targetPath: "$(statusPostOutputDirectory)"
           artifact: "statusPostOutput"
           publishLocation: "pipeline"
