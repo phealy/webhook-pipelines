@@ -99,7 +99,7 @@ jobs:
           }
           EOF
           echo "##[endgroup]"
-
+          echo "GIT_AUTH is $GIT_AUTH"
           echo "##[group]curl output"
           curl --no-progress-meter --fail \
             -H "Accept: application/vnd.github.v3+json" \
