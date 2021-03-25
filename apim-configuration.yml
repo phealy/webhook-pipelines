@@ -21,8 +21,6 @@
 # GitHub pull request webhook event:
 # https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#pull_request
 
-name: ${{ parameters.githubpr.pull_request.repo.name }}_pullrequest_${{ parameters.githubpr.pull_request.number }}_$(Rev:r)
-
 trigger:
   - none
 
@@ -78,6 +76,8 @@ jobs:
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
           echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
+
+          echo "##vso[release.updatereleasename]${{ parameters.githubpr.pull_request.head.repo.name }}_pullrequest_${{ parameters.githubpr.number }}"
         displayName: Set pipeline variables
 
       # Post the initial pending status to GitHub
