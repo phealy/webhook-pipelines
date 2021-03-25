@@ -184,7 +184,7 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr '.errors' <\"$(Build.StagingDirectory)/statusReply.json\" >/dev/null)"
+          JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/statusReply.json" >/dev/null)"
           if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
