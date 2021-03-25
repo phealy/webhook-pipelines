@@ -38,14 +38,6 @@ parameters:
     type: stepList
     default: []
 
-variables:
-  # - name: checkContext
-  #   value: ${{ parameters.checkContext }}
-  # - name: checkDescription
-  #   value: ${{ parameters.checkContext }}
-  - name: pipelineBuildURL
-    value: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
-
 # Note the condition on this job - it will skip the whole thing unless the
 # action is in this list. Because the webhook is triggered for every PR change
 # and I don't know how to filter to a list of values in the webhook connection,
@@ -81,7 +73,7 @@ jobs:
             "state": "pending",
             "context": "$(checkContext)",
             "description": "$(checkDescription)",
-            "target_url": "$(pipelineBuildURL)"
+            "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
           }
           EOF
 
@@ -138,7 +130,7 @@ jobs:
             "state": "$(pipelineStatus)",
             "context": "$(checkContext)",
             "description": "$(checkDescription)",
-            "target_url": "$(pipelineBuildURL)"
+            "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
           }
           EOF
 
