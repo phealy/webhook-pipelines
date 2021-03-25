@@ -9,6 +9,13 @@ trigger:
 pr:
   - none
 
+variables:
+  # These are what show in the pull request status check line. The context
+  # needs to be unique for the repository as it's the identifier used to set
+  # the required status check.
+  checkContext: Pipeline validation
+  checkDescription: AzDO pipeline check
+
 resources:
   # Incoming Webhook service connection
   webhooks:
@@ -29,13 +36,9 @@ pool:
 extends:
   template: github_pr_pipeline.yml
   parameters:
-    # These are what show in the pull request status check line. The context
-    # needs to be unique for the repository as it's the identifier used to set
-    # the required status check.
-    checkContext: Pipeline validation
-    checkDescription: AzDO pipeline check
-
-    # Pass in the pull request webhook data
+    # Pass in required data
+    checkContext: $(checkContext)
+    checkDescription: $(checkDescription)
     githubpr: ${{ parameters.githubpr }}
 
     # Implement checkout tasks here - any failing step will cause the pipeline
