@@ -172,7 +172,9 @@ jobs:
   # we got invoked means that GitHub is waiting for us to post back.
   - job: finalizeCheckout
     displayName: Finalize checkout
-    dependsOn: setupCheckout, performCheckout
+    dependsOn:
+      - setupCheckout
+      - performCheckout
     condition: succeededOrFailed()
     steps:
       - script: |
