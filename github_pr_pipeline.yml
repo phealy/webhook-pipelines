@@ -28,10 +28,10 @@ trigger:
 # needs to be unique for the repository as it's the identifier used to set
 # the required status check.
 parameters:
-  - name: checkContext
-    type: string
-  - name: checkDescription
-    type: string
+  # - name: checkContext
+  #   type: string
+  # - name: checkDescription
+  #   type: string
   - name: githubpr
     type: object
   - name: checkoutSteps
