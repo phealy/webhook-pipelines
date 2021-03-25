@@ -31,7 +31,7 @@ variables:
   - name: checkContext
     value: Pipeline validation
   - name: checkDescription
-    value: AzDO pipeline check - state.txt
+    value: AzDO pipeline check
   - name: System.debug
     value: true
   - name: pipelineBuildURL
