@@ -90,7 +90,7 @@ jobs:
           set -euxo pipefail
           # ANOTHER CHECKOUT TASK
           # This example will fail in step 1 if the file "fail2" exists
-          test -f fail2 && exit 1
+          test ! -f fail2
         displayName: Perform checkout step 2
 
       # This sets the overall status variable to success if we get here.
