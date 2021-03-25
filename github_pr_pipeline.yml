@@ -40,6 +40,10 @@ parameters:
     default: []
 
 variables:
+  - name: checkContext
+    value: ${{ parameters.checkContext }}
+  - name: checkDescription
+    value: ${{ parameters.checkContext }}
   - name: pipelineBuildURL
     value: $(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
 
