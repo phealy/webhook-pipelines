@@ -98,13 +98,13 @@ jobs:
             -H "${GIT_AUTH}" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
-            --data @"${statusPostOutputDirectory}/statusPost.json" \
+            --data @"${statusPostOutputDirectory}/pendingPost.json" \
             | tee "${statusPostOutputDirectory}/pendingReply.json"
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
           jq -cre '.errors' <"${statusPostOutputDirectory}/pendingReply.json" >/dev/null && {
-            echo '##vso[task.issue type=error;]GitHub commit status post failed.'
+            echo '##vso[task.issue type=error;]GitHub pending commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
           }
         condition: always()
