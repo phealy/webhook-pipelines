@@ -32,6 +32,8 @@ parameters:
     type: string
   - name: checkDescription
     type: string
+  - name: githubpr
+    type: object
   - name: checkoutSteps
     type: stepList
     default: []

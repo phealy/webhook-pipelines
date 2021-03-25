@@ -35,6 +35,9 @@ extends:
     checkContext: Pipeline validation
     checkDescription: AzDO pipeline check
 
+    # Pass in the pull request webhook data
+    githubpr: ${{ parameters.githubpr }}
+
     # Implement checkout tasks here - any failing step will cause the pipeline
     # to terminate and post a failure to the commit.
     checkoutSteps:
