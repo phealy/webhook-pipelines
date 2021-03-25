@@ -106,7 +106,7 @@ jobs:
           jq -cre '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json" >/dev/null && {
             echo '##vso[task.issue type=error;]GitHub pending commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
-          } || {}
+          } || { true; }
         condition: always()
         displayName: Post pending status to PR commit
 
@@ -186,7 +186,7 @@ jobs:
           jq -cre '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json" >/dev/null && {
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
-          } || {}
+          } || { true; }
         env:
           GIT_AUTH: $(gitAuthToken)
         condition: always()
