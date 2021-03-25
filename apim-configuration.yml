@@ -57,8 +57,8 @@ pool:
 # this prevents an agent allocation and finishes the pipeline run successfully
 # in <1s when it's just something like a comment on the PR.
 jobs:
-  - job: performCheckout
-    displayName: Perform checkout
+  - job: setupCheckout
+    displayName: Setup for checkout
     condition: in('${{ parameters.githubpr.action }}', 'opened', 'reopened', 'edited', 'synchronize')
     steps:
         # Performing this checkout with persistCredentials allows us to use 
@@ -81,7 +81,7 @@ jobs:
 
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
-          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
+          echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
         displayName: Set pipeline variables
 
       # Post the initial pending status to GitHub
@@ -120,7 +120,10 @@ jobs:
           GIT_AUTH: $(gitAuthToken)
         condition: always()
         displayName: Post pending status to PR commit
-
+  - job: performCheckout
+    displayName: Perform checkout
+    dependsOn: setupCheckout
+    steps:
       # This script step switches the repository that's been checked out above
       # to the head of the pull request so that we have the code we need to check.
       # NOTE: this only applies in *this job*, so if you split this into multiple
@@ -155,25 +158,37 @@ jobs:
         displayName: Perform checkout step 2
       ### CHECKOUT STEPS END HERE
 
-      # This sets the overall status variable to success if we get here.
-      - script: |
-          set -euo pipefail
-          echo "##[command]Setting pipelineStatus to success"
-          echo "##vso[task.setvariable variable=pipelineStatus]success"
-        displayName: Set pipeline status to success
+  # We always want to run this job if the checkout ran, because the fact 
+  # we got invoked means that GitHub is waiting for us to post back.
+  - job: finalizeCheckout
+    displayName: Finalize checkout
+    dependsOn: finalizeCheckout
+    condition: succeededOrFailed()
+    steps:
+      # # This sets the overall status variable to success if checkout succeeded.
+      # - script: |
+      #     set -euo pipefail
+      #     echo "##[command]Setting pipelineStatus to success"
+      #     echo "##vso[task.setvariable variable=pipelineStatus]success"
+      #   condition: eq(dependencies.performCheckout.result, 'Succeeded')
+      #   displayName: Set pipeline status to success
 
-      # This triggers to set failure state if any previous step failed.
+      # # This triggers to set failure state if checkout failed.
+      # - script: |
+      #     set -euo pipefail
+      #     echo "##[command]Setting pipelineStatus to failure"
+      #     echo "##vso[task.setvariable variable=pipelineStatus]failure"
+      #   condition: in(dependencies.performCheckout.result, 'Failed', 'Cancelled')
+      #   displayName: Set pipeline status to failure
       - script: |
           set -euo pipefail
-          echo "##[command]Setting pipelineStatus to failure"
-          echo "##vso[task.setvariable variable=pipelineStatus]failure"
-        condition: failed()
-        displayName: Set pipeline status to failure
 
-      # We always want to run this step, because the fact we got invoked means that
-      # GitHub is waiting for us to post back.
-      - script: |
-          set -euo pipefail
+          select "$(dependencies.performCheckout.result)" in
+            Succeeded) STATUS="success";;
+            Failed|Cancelled) STATUS="failure";;
+            *) STATUS="failure";;
+          esac
+
           echo "##[command]Status post to ${{ parameters.githubpr.pull_request.statuses_url }}"
           echo "##[group]Post body"
           cat << EOF | tee "$(Build.StagingDirectory)/statusPost.json"
@@ -204,7 +219,7 @@ jobs:
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
         env:
-          GIT_AUTH: $(gitAuthToken)
+          GIT_AUTH: $(dependencies.setupCheckout.gitAuthToken)
         condition: always()
         displayName: Post completed status to PR commit
 
