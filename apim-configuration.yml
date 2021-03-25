@@ -3,6 +3,8 @@
 #
 # Example implementation template for a pipeline.
 
+name: ${{ parameters.githubpr.pull_request.repo.name }}_pullrequest_${{ parameters.githubpr.pull_request.number }}_$(Rev:r)
+
 trigger:
   - none
 
