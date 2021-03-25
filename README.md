@@ -10,4 +10,5 @@ See [the pipeline file](github__pahealy7__apim-configuation__pr.yml) for more in
 Documentation:
 
 - [Azure Pipelines Incoming Webhooks](https://docs.microsoft.com/en-us/azure/devops/release-notes/2020/pipelines/sprint-172-update#generic-webhook-based-triggers-for-yaml-pipelines)
+- [GitHub Commit Status API](https://docs.github.com/en/rest/reference/repos#create-a-commit-status)
 - [GitHub pull request webhook event](https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#pull_request)
