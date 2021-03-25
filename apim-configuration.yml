@@ -33,7 +33,8 @@ variables:
   # the required status check.
   checkContext: Pipeline validation
   checkDescription: AzDO pipeline check
-
+  System.debug: true
+  
 resources:
   # Incoming Webhook service connection
   webhooks:
@@ -82,6 +83,7 @@ jobs:
           GIT_REMOTE="$(git config --get remote.origin.url)"
           GIT_AUTH="$(git config --get "http.${GIT_REMOTE}.extraheader")"
           echo "GIT_AUTH is $GIT_AUTH"
+          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]${GIT_AUTH##Authorization: }"
           echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]${GIT_AUTH##Authorization: }"
         displayName: Set pipeline variables
 
@@ -117,7 +119,7 @@ jobs:
           # API call didn't actually succeed.
           JQERRORS="$(jq -cr '.errors != null or .message == "Not Found"' <$(Build.StagingDirectory)/pendingReply.json)"
           if [ "${JQERRORS}" == 'true' ]; then
-            echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
+            echo '##vso[task.issue type=error;]GitHub pending commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
         env:
