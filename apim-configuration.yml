@@ -77,7 +77,8 @@ jobs:
           GIT_REMOTE="$(git config --get remote.origin.url)"
           echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$(git config --get "http.${GIT_REMOTE}.extraheader")"
 
-          echo "##vso[release.updatereleasename]${{ parameters.githubpr.pull_request.head.repo.name }}_pullrequest_${{ parameters.githubpr.number }}"
+          echo "##vso[build.updatebuildnumber]${{ parameters.githubpr.pull_request.head.repo.name }}_pullrequest_${{ parameters.githubpr.number }}"
+          echo "##vso[build.addbuildtag]${{ parameters.githubpr.pull_request.url }}"
         displayName: Set pipeline variables
 
       # Post the initial pending status to GitHub
