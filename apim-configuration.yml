@@ -189,7 +189,7 @@ jobs:
           set -euo pipefail
 
           echo "##[command]Found checkout status: $(dependencies.performCheckout.result)"
-          select "$(dependencies.performCheckout.result)" in
+          case "$(dependencies.performCheckout.result)" in
             Succeeded) STATUS="success";;
             Failed|Cancelled) STATUS="failure";;
             *) STATUS="failure";;
