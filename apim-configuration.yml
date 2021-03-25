@@ -102,7 +102,7 @@ jobs:
           echo "GIT_AUTH is $GIT_AUTH"
           echo "##[group]curl output"
           set -x
-          curl --no-progress-meter --fail \
+          curl --no-progress-meter -v \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: ${GIT_AUTH}" \
             -H "Content-Type: application/json" \
@@ -196,7 +196,7 @@ jobs:
           echo "##[endgroup]"
 
           echo "##[group]curl output"
-          curl --no-progress-meter \
+          curl --no-progress-meter -v \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: ${GIT_AUTH}" \
             -H "Content-Type: application/json" \
