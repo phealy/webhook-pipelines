@@ -34,7 +34,7 @@ variables:
   checkContext: Pipeline validation
   checkDescription: AzDO pipeline check
   System.debug: true
-  
+
 resources:
   # Incoming Webhook service connection
   webhooks:
@@ -82,9 +82,8 @@ jobs:
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
           GIT_AUTH="$(git config --get "http.${GIT_REMOTE}.extraheader")"
-          echo "GIT_AUTH is $GIT_AUTH"
-          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]${GIT_AUTH##Authorization: }"
-          echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]${GIT_AUTH##Authorization: }"
+          echo "##vso[task.setvariable variable=gitAuthToken;isSecret=true]$GIT_AUTH"
+          echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]$GIT_AUTH"
         displayName: Set pipeline variables
 
       # Post the initial pending status to GitHub
@@ -106,7 +105,7 @@ jobs:
           set -x
           curl --no-progress-meter -v \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: ${GIT_AUTH}" \
+            -H "${GIT_AUTH}" \
             -H "Content-Type: application/json" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
@@ -200,7 +199,7 @@ jobs:
           echo "##[group]curl output"
           curl --no-progress-meter -v \
             -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: ${GIT_AUTH}" \
+            -H "${GIT_AUTH}" \
             -H "Content-Type: application/json" \
             -X POST \
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
