@@ -101,6 +101,7 @@ jobs:
           echo "##[endgroup]"
           echo "GIT_AUTH is $GIT_AUTH"
           echo "##[group]curl output"
+          set -x
           curl --no-progress-meter --fail \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: ${GIT_AUTH}" \
@@ -109,12 +110,13 @@ jobs:
             '${{ parameters.githubpr.pull_request.statuses_url }}' \
             --data @"$(Build.StagingDirectory)/pendingPost.json" \
             | tee "$(Build.StagingDirectory)/pendingReply.json"
+          set +x
           echo "##[endgroup]"
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr 'if (.errors != null or .message == "Not Found") then "failure" else "success" end' <$(Build.StagingDirectory)/pendingReply.json)"
-          if [ "${JQ}" == 'null' ]; then
+          JQERRORS="$(jq -cr '.errors != null or .message == "Not Found"' <$(Build.StagingDirectory)/pendingReply.json)"
+          if [ "${JQERRORS}" == 'true' ]; then
             echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
@@ -206,8 +208,8 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr 'if (.errors != null or .message == "Not Found") then "failure" else "success" end' <$(Build.StagingDirectory)/statusReply.json)"
-          if [ "${JQ}" == 'null' ]; then
+          JQERRORS="$(jq -cr '.errors != null or .message == "Not Found"' <$(Build.StagingDirectory)/statusReply.json)"
+          if [ "${JQERRORS}" == 'true' ]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
