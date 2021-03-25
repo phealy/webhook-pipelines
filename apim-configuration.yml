@@ -101,7 +101,7 @@ jobs:
           echo "##[endgroup]"
 
           echo "##[group]curl output"
-          curl --no-progress-meter \
+          curl --no-progress-meter --fail \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: ${GIT_AUTH}" \
             -H "Content-Type: application/json" \
@@ -113,7 +113,7 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/pendingReply.json" >/dev/null)"
+          JQ="$(jq -cr 'if (.errors != null or .message == "Not Found") then "failure" else "success" end' <$(Build.StagingDirectory)/pendingReply.json)"
           if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
             echo '##vso[task.complete result=Failed;done=true;]'
@@ -206,7 +206,7 @@ jobs:
 
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
-          JQ="$(jq -cr '.errors' <"$(Build.StagingDirectory)/statusReply.json" >/dev/null)"
+          JQ="$(jq -cr 'if (.errors != null or .message == "Not Found") then "failure" else "success" end' <$(Build.StagingDirectory)/statusReply.json)"
           if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
