@@ -172,14 +172,13 @@ jobs:
   # we got invoked means that GitHub is waiting for us to post back.
   - job: finalizeCheckout
     displayName: Finalize checkout
-    dependsOn: performCheckout
+    dependsOn: setupCheckout, performCheckout
     condition: succeededOrFailed()
     steps:
       - script: |
           set -euo pipefail
           
-          echo "##[command]Found checkout status: $[dependencies.performCheckout.result]"
-          case "$[dependencies.performCheckout.result]" in
+          case $PIPELINE_STATUS in
             Succeeded) STATUS="success";;
             Failed|Cancelled) STATUS="failure";;
             *) STATUS="failure";;
@@ -217,6 +216,7 @@ jobs:
           fi
         env:
           GIT_AUTH: $[ dependencies.setupCheckout.outputs['setVars.gitAuthToken'] ]
+          PIPELINE_STATUS: $[dependencies.performCheckout.result]
         condition: always()
         displayName: Post completed status to PR commit
 
