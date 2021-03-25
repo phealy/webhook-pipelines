@@ -24,9 +24,6 @@
 trigger:
   - none
 
-pr:
-  - none
-
 # These are what show in the pull request status check line. The context
 # needs to be unique for the repository as it's the identifier used to set
 # the required status check.
