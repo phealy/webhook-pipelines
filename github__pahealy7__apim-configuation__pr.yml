@@ -97,7 +97,7 @@ jobs:
 
       # This sets the overall status variable to success if we get here.
       - script: |
-          echo '##vso[task.setvariable variable=pipelineStatus]success'
+          echo '##vso[task.setvariable variable=pipelineStatus]successNOTREALLY'
         displayName: Set pipeline status to success
 
       # This triggers to set failure state if any previous step failed.
