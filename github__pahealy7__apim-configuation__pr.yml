@@ -104,7 +104,7 @@ jobs:
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
           JQ="$(jq -cr '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/pendingReply.json" >/dev/null)"
-          if [[ "${JQ}" -ne "null" ]]; then
+          if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub pending commit status post failed: ${JQ}'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
@@ -185,7 +185,7 @@ jobs:
           # Error out if the response from GitHub has .errors in it, indicating the
           # API call didn't actually succeed.
           JQ="$(jq -cr '.errors' <"${STATUSPOSTOUTPUTDIRECTORY}/statusReply.json" >/dev/null)"
-          if [[ "${JQ}" -ne "null" ]]; then
+          if [ "${JQ}" == 'null' ]; then
             echo '##vso[task.issue type=error;]GitHub commit status post failed.'
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
