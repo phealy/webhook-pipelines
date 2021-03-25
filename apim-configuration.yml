@@ -190,7 +190,7 @@ jobs:
           echo "##[group]Post body"
           cat << EOF | tee "$(Build.StagingDirectory)/statusPost.json"
           {
-            "state": "$(pipelineStatus)",
+            "state": "$STATUS",
             "context": "$(checkContext)",
             "description": "$(checkDescription)",
             "target_url": "$(System.TeamFoundationCollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
