@@ -81,6 +81,7 @@ jobs:
           # Fetch the PAT from the git configuration.
           GIT_REMOTE="$(git config --get remote.origin.url)"
           GIT_AUTH="$(git config --get "http.${GIT_REMOTE}.extraheader")"
+          echo "GIT_AUTH is $GIT_AUTH"
           echo "##vso[task.setvariable variable=gitAuthToken;isOutput=true;isSecret=true]${GIT_AUTH##Authorization: }"
         displayName: Set pipeline variables
 
@@ -170,26 +171,11 @@ jobs:
     dependsOn: performCheckout
     condition: succeededOrFailed()
     steps:
-      # # This sets the overall status variable to success if checkout succeeded.
-      # - script: |
-      #     set -euo pipefail
-      #     echo "##[command]Setting pipelineStatus to success"
-      #     echo "##vso[task.setvariable variable=pipelineStatus]success"
-      #   condition: eq(dependencies.performCheckout.result, 'Succeeded')
-      #   displayName: Set pipeline status to success
-
-      # # This triggers to set failure state if checkout failed.
-      # - script: |
-      #     set -euo pipefail
-      #     echo "##[command]Setting pipelineStatus to failure"
-      #     echo "##vso[task.setvariable variable=pipelineStatus]failure"
-      #   condition: in(dependencies.performCheckout.result, 'Failed', 'Cancelled')
-      #   displayName: Set pipeline status to failure
       - script: |
           set -euo pipefail
-
-          echo "##[command]Found checkout status: $(dependencies.performCheckout.result)"
-          case "$(dependencies.performCheckout.result)" in
+          
+          echo "##[command]Found checkout status: $[dependencies.performCheckout.result]"
+          case "$[dependencies.performCheckout.result]" in
             Succeeded) STATUS="success";;
             Failed|Cancelled) STATUS="failure";;
             *) STATUS="failure";;
@@ -226,7 +212,7 @@ jobs:
             echo '##vso[task.complete result=Failed;done=true;]'
           fi
         env:
-          GIT_AUTH: $(dependencies.setupCheckout.gitAuthToken)
+          GIT_AUTH: $[dependencies.setupCheckout.gitAuthToken]
         condition: always()
         displayName: Post completed status to PR commit
 
